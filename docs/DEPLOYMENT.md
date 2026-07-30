@@ -95,7 +95,7 @@ Saves and scores are rejected for unknown game ids, so a typo can't quietly
 create junk rows:
 
 ```bash
-fly secrets set GAME_IDS="investment-time-machine,pose-runner,dance-trainer"
+fly secrets set GAME_IDS="investment-time-machine,webcam-pose-runner,dance-trainer"
 ```
 
 ## 5. Back up the database

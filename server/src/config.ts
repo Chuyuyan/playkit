@@ -52,7 +52,7 @@ export const config = {
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
 
   /** Registered game ids. Keeps a typo'd or hostile game id out of the DB. */
-  games: (process.env.GAME_IDS ?? 'investment-time-machine,pose-runner,dance-trainer')
+  games: (process.env.GAME_IDS ?? 'investment-time-machine,webcam-pose-runner,dance-trainer')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
