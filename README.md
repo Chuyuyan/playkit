@@ -1,5 +1,7 @@
 # playkit
 
+[![CI](https://github.com/Chuyuyan/playkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Chuyuyan/playkit/actions/workflows/ci.yml)
+
 One backend for a shelf of small web games: **accounts, cloud saves, and
 leaderboards**, plus a dependency-free browser SDK that any game can drop in.
 
