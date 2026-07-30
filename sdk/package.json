@@ -1,0 +1,18 @@
+{
+  "name": "@playkit/sdk",
+  "version": "0.1.0",
+  "description": "Browser client for playkit: auth, cloud saves, leaderboards",
+  "type": "module",
+  "main": "dist/playkit.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --format=esm --outfile=dist/playkit.js --sourcemap",
+    "build:min": "esbuild src/index.ts --bundle --format=esm --minify --outfile=dist/playkit.min.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.3"
+  }
+}

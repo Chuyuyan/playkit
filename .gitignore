@@ -1,0 +1,17 @@
+node_modules/
+dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# The player database — never commit
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+
+.DS_Store
+*.log

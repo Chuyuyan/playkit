@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>playkit SDK smoke test</title>
+  <style>
+    body { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 24px; background: #0d1117; color: #e6edf3; }
+    h1 { font-size: 16px; }
+    .row { padding: 3px 0; }
+    .pass::before { content: 'PASS  '; color: #3fb950; }
+    .fail::before { content: 'FAIL  '; color: #f85149; }
+    .fail { color: #f85149; }
+    #summary { margin-top: 16px; padding-top: 12px; border-top: 1px solid #30363d; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>playkit SDK — browser smoke test</h1>
+  <p>Server: <span id="server"></span> &nbsp;|&nbsp; Page origin: <span id="origin"></span></p>
+  <div id="out"></div>
+  <div id="summary">running…</div>
+
+  <script type="module">
+    import { createPlaykit, SaveConflictError } from '../sdk/dist/playkit.js';
+
+    const BASE = 'http://localhost:4000';
+    const GAME = 'investment-time-machine';
+    document.getElementById('server').textContent = BASE;
+    document.getElementById('origin').textContent = location.origin;
+
+    const out = document.getElementById('out');
+    let pass = 0, fail = 0;
+
+    function check(name, ok, detail = '') {
+      const div = document.createElement('div');
+      div.className = 'row ' + (ok ? 'pass' : 'fail');
+      div.textContent = name + (detail ? ` — ${detail}` : '');
+      out.appendChild(div);
+      ok ? pass++ : fail++;
+    }
+
+    // A distinct email per run so repeated runs don't collide.
+    const email = `browser-${Date.now()}@example.com`;
+    const password = 'a-good-password';
+
+    try {
+      let authEvents = 0;
+      const pk = createPlaykit({
+        baseUrl: BASE,
+        gameId: GAME,
+        onAuthChange: () => authEvents++,
+      });
+
+      check('starts signed out', pk.isSignedIn === false);
+
+      // --- register (also proves CORS + cross-origin cookie set) ---
+      const user = await pk.register(email, password, 'Browser Tester');
+      check('register returns the user', user.displayName === 'Browser Tester', JSON.stringify(user));
+      check('client knows it is signed in', pk.isSignedIn === true);
+      check('onAuthChange fired', authEvents > 0, `${authEvents} event(s)`);
+
+      // --- cloud save round trip ---
+      check('no save yet', (await pk.loadProgress()) === null);
+
+      const payload = { day: 2, cash: 7500.5, decisions: ['the-spike'], dna: { fomo: 0.3 } };
+      const saved = await pk.saveProgress(payload);
+      check('save returns version 1', saved.version === 1, `version=${saved.version}`);
+
+      const loaded = await pk.loadProgress();
+      check('save round-trips exactly', JSON.stringify(loaded.data) === JSON.stringify(payload));
+
+      // --- optimistic concurrency ---
+      await pk.saveProgress({ day: 3 });
+      let conflicted = false;
+      try {
+        await pk.saveProgress({ day: 99 }, 1); // stale version
+      } catch (e) {
+        conflicted = e instanceof SaveConflictError;
+      }
+      check('stale save raises SaveConflictError', conflicted);
+
+      // --- leaderboard ---
+      await pk.submitScore(4200, { board: 'browser-smoke' });
+      const board = await pk.getLeaderboard({ board: 'browser-smoke', limit: 10 });
+      check('score appears on leaderboard',
+        board.some(e => e.displayName === 'Browser Tester' && e.score === 4200),
+        JSON.stringify(board.slice(0, 3)));
+
+      const rank = await pk.getMyRank('browser-smoke');
+      check('my rank is reported', typeof rank.rank === 'number', `rank=${rank.rank} best=${rank.best}`);
+
+      // --- session persistence: a brand-new client must resume via the cookie ---
+      const fresh = createPlaykit({ baseUrl: BASE, gameId: GAME });
+      const restored = await fresh.restore();
+      check('a new client restores the session from the httpOnly cookie',
+        restored !== null && restored.email === email,
+        restored ? restored.email : 'null');
+
+      // --- the access token must not be reachable from storage ---
+      const inStorage = Object.keys(localStorage).some(k => /token|jwt|playkit/i.test(k));
+      check('no token written to localStorage', !inStorage);
+      const cookieVisible = document.cookie.includes('playkit_refresh');
+      check('refresh cookie is httpOnly (invisible to JS)', !cookieVisible, document.cookie || '(no readable cookies)');
+
+      // --- logout ---
+      await pk.logout();
+      check('signed out after logout', pk.isSignedIn === false);
+
+      const afterLogout = createPlaykit({ baseUrl: BASE, gameId: GAME });
+      check('cannot restore after logout', (await afterLogout.restore()) === null);
+
+      // --- wrong password rejected ---
+      let rejected = false;
+      try {
+        await createPlaykit({ baseUrl: BASE, gameId: GAME }).login(email, 'wrong-password');
+      } catch (e) {
+        rejected = e.status === 401;
+      }
+      check('wrong password rejected with 401', rejected);
+
+      // --- login again works ---
+      const back = await createPlaykit({ baseUrl: BASE, gameId: GAME }).login(email, password);
+      check('can log back in', back.email === email);
+
+    } catch (err) {
+      check('unexpected exception', false, String(err && err.stack || err));
+    }
+
+    const s = document.getElementById('summary');
+    s.textContent = `${pass} passed, ${fail} failed`;
+    s.style.color = fail === 0 ? '#3fb950' : '#f85149';
+    window.__result = { pass, fail };
+  </script>
+</body>
+</html>
