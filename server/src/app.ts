@@ -1,9 +1,10 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
-import { config } from './config.ts';
+import { config, passwordResetEnabled } from './config.ts';
 import { registerAuthRoutes } from './auth/routes.ts';
 import { registerGameRoutes } from './games/routes.ts';
+import { registerResetPage } from './reset-page.ts';
 
 export async function buildApp(opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
   const app = Fastify({ logger: opts.logger ?? !config.isProd });
@@ -25,10 +26,12 @@ export async function buildApp(opts: { logger?: boolean } = {}): Promise<Fastify
     ok: true,
     games: config.games,
     googleEnabled: Boolean(config.googleClientId),
+    passwordResetEnabled,
   }));
 
   registerAuthRoutes(app);
   registerGameRoutes(app);
+  registerResetPage(app);
 
   return app;
 }

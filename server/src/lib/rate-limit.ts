@@ -42,3 +42,10 @@ export const SIGNUP_RULE: RateLimitRule = {
   max: config.signupMaxAttempts,
   windowMs: config.signupWindowMs,
 };
+
+// Reset requests are throttled per IP so nobody can use the endpoint to bomb
+// someone's inbox, or to burn through an email provider's quota.
+export const RESET_RULE: RateLimitRule = {
+  max: Number(process.env.RESET_MAX_ATTEMPTS ?? 5),
+  windowMs: Number(process.env.RESET_WINDOW_MS ?? 60 * 60_000),
+};

@@ -14,11 +14,13 @@
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^10.0.2",
     "fastify": "^5.2.1",
-    "jose": "^5.9.6"
+    "jose": "^5.9.6",
+    "nodemailer": "^9.0.3"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",
     "@types/node": "^22.10.5",
+    "@types/nodemailer": "^8.0.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }

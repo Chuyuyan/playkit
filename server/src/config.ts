@@ -59,6 +59,21 @@ export const config = {
 
   maxSaveBytes: Number(process.env.MAX_SAVE_BYTES ?? 256 * 1024),
 
+  /** Where the reset link points. Must be reachable by the player's browser. */
+  publicUrl: (process.env.PUBLIC_URL ?? '').replace(/\/$/, ''),
+  resetTokenTtlMinutes: Number(process.env.RESET_TOKEN_TTL_MINUTES ?? 30),
+
+  // Email. 'smtp' suits a plain mailbox (Gmail app password); 'resend' is an
+  // HTTP API and needs no dependency. Unset means reset emails are logged, not
+  // sent — fine for development, refused in production (see the check below).
+  emailProvider: (process.env.EMAIL_PROVIDER ?? '') as '' | 'smtp' | 'resend',
+  emailFrom: process.env.EMAIL_FROM ?? '',
+  resendApiKey: process.env.RESEND_API_KEY ?? '',
+  smtpHost: process.env.SMTP_HOST ?? '',
+  smtpPort: Number(process.env.SMTP_PORT ?? 587),
+  smtpUser: process.env.SMTP_USER ?? '',
+  smtpPassword: process.env.SMTP_PASSWORD ?? '',
+
   // Tunable so a busy shared IP (a school network, a test suite) isn't locked
   // out by hard-coded numbers.
   loginMaxAttempts: Number(process.env.LOGIN_MAX_ATTEMPTS ?? 8),
@@ -69,4 +84,20 @@ export const config = {
 
 export function isKnownGame(gameId: string): boolean {
   return (config.games as readonly string[]).includes(gameId);
+}
+
+/** True once a reset link can actually be delivered and clicked. */
+export const passwordResetEnabled = Boolean(config.publicUrl && config.emailProvider);
+
+// Fail loudly rather than half-configured: a reset endpoint that silently logs
+// the link to the server console in production looks like it works while
+// leaving players stuck.
+if (config.isProd && config.emailProvider && !config.publicUrl) {
+  throw new Error('PUBLIC_URL is required when EMAIL_PROVIDER is set');
+}
+if (config.isProd && config.emailProvider === 'resend' && !config.resendApiKey) {
+  throw new Error('RESEND_API_KEY is required when EMAIL_PROVIDER=resend');
+}
+if (config.isProd && config.emailProvider === 'smtp' && !(config.smtpHost && config.smtpUser)) {
+  throw new Error('SMTP_HOST and SMTP_USER are required when EMAIL_PROVIDER=smtp');
 }

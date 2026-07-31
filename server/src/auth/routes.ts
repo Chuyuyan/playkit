@@ -21,8 +21,11 @@ import {
   signAccessToken,
   verifyAccessToken,
 } from './tokens.ts';
-import { clearLimit, hitLimit, LOGIN_RULE, SIGNUP_RULE } from '../lib/rate-limit.ts';
+import { clearLimit, hitLimit, LOGIN_RULE, SIGNUP_RULE, RESET_RULE } from '../lib/rate-limit.ts';
 import { verifyGoogleIdToken } from './google.ts';
+import { consumeResetToken, issueResetToken, pruneResetTokens } from './reset.ts';
+import { googleOnlyEmail, resetEmail, sendMail } from '../lib/email.ts';
+import { passwordResetEnabled } from '../config.ts';
 
 const REFRESH_COOKIE = 'playkit_refresh';
 
@@ -177,6 +180,73 @@ export function registerAuthRoutes(app: FastifyInstance) {
     }
     updateDisplayName(claims.sub, displayName);
     return reply.send({ user: toPublic(findById(claims.sub)!) });
+  });
+
+  /**
+   * Starts a password reset.
+   *
+   * Always answers 200 with the same body, whether or not the address exists —
+   * otherwise this becomes the email-enumeration oracle that /auth/login is
+   * carefully not. Whether there's an account, and whether it even has a
+   * password, is communicated in the email itself.
+   */
+  app.post('/auth/forgot-password', async (req, reply) => {
+    const { email } = (req.body ?? {}) as Record<string, unknown>;
+    if (typeof email !== 'string' || !isValidEmail(email)) {
+      return reply.code(400).send({ error: 'invalid_email', message: 'Enter a valid email address.' });
+    }
+
+    const limit = hitLimit(`reset:${req.ip}`, RESET_RULE);
+    if (limit.limited) {
+      return reply
+        .code(429)
+        .header('retry-after', String(limit.retryAfterSec))
+        .send({ error: 'rate_limited', message: 'Too many requests. Try again later.' });
+    }
+
+    const sent = { ok: true, message: 'If that address has an account, a reset link is on its way.' };
+
+    if (!passwordResetEnabled) {
+      req.log.warn('password reset requested but no email provider is configured');
+      return reply.send(sent);
+    }
+
+    const user = findByEmail(email);
+    if (!user) return reply.send(sent);   // silent on purpose
+
+    try {
+      if (!user.password_hash && user.google_sub) {
+        await sendMail({ ...googleOnlyEmail(user.display_name), to: user.email });
+      } else {
+        const token = issueResetToken(user.id);
+        const link = `${config.publicUrl}/reset?token=${encodeURIComponent(token)}`;
+        await sendMail({ ...resetEmail(link, user.display_name), to: user.email });
+      }
+      pruneResetTokens();
+    } catch (err) {
+      // A provider outage must not tell the caller whether the address existed.
+      req.log.error({ err }, 'failed to send reset email');
+    }
+
+    return reply.send(sent);
+  });
+
+  /** Completes a reset. The token is single-use and revokes every session. */
+  app.post('/auth/reset-password', async (req, reply) => {
+    const { token, password } = (req.body ?? {}) as Record<string, unknown>;
+    if (typeof token !== 'string' || !token) {
+      return reply.code(400).send({ error: 'invalid_request', message: 'Reset link is missing its token.' });
+    }
+    const pw = validatePassword(password);
+    if (!pw.ok) return reply.code(400).send({ error: 'weak_password', message: pw.message });
+
+    const outcome = await consumeResetToken(token, password as string);
+    if (!outcome.ok) {
+      return reply.code(400).send({ error: 'invalid_token', message: outcome.message });
+    }
+
+    clearRefreshCookie(reply);
+    return reply.send({ ok: true, message: 'Password updated. You can sign in now.' });
   });
 
   /**

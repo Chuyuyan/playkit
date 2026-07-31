@@ -49,6 +49,18 @@ CREATE TABLE IF NOT EXISTS scores (
 CREATE INDEX IF NOT EXISTS idx_scores_board ON scores(game_id, board, score DESC);
 CREATE INDEX IF NOT EXISTS idx_scores_user ON scores(user_id, game_id, board);
 
+-- Password-reset tokens. Stored hashed and single-use, for the same reason as
+-- refresh tokens: a leaked database must not hand anyone an account.
+CREATE TABLE IF NOT EXISTS reset_tokens (
+  id         TEXT PRIMARY KEY,
+  user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  used_at    TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_reset_user ON reset_tokens(user_id);
+
 -- Auth attempt log, used for rate limiting. Cheap to prune.
 CREATE TABLE IF NOT EXISTS auth_attempts (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
