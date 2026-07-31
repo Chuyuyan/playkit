@@ -179,6 +179,60 @@ someone claim an email they don't control and take over a password account.
 
 ---
 
+## Password reset
+
+playkit hosts the reset page itself at `PUBLIC_URL/reset`, so a link works no
+matter which game the player came from.
+
+### 1. Point it at itself
+
+```bash
+fly secrets set PUBLIC_URL="https://<your-app>.fly.dev"
+```
+
+### 2. Choose how mail goes out
+
+**Gmail (recommended for a personal project.)** Reaches any address, free, no
+domain required.
+
+1. Turn on 2-Step Verification on the Google account.
+2. Create an **App password** at <https://myaccount.google.com/apppasswords>
+   (16 characters — it is not your Google password, and it can be revoked on
+   its own).
+3. Then:
+
+```bash
+fly secrets set EMAIL_PROVIDER=smtp \
+  SMTP_HOST=smtp.gmail.com SMTP_PORT=587 \
+  SMTP_USER="you@gmail.com" \
+  SMTP_PASSWORD="<the 16-character app password>" \
+  EMAIL_FROM="Your Game <you@gmail.com>"
+```
+
+**Resend** is the alternative — an HTTP API with no dependency — but sending to
+addresses other than your own requires a domain verified with them, so it only
+suits you once you own a domain.
+
+```bash
+fly secrets set EMAIL_PROVIDER=resend RESEND_API_KEY=... EMAIL_FROM="Your Game <you@yourdomain.com>"
+```
+
+Verify: `GET /health` reports `"passwordResetEnabled": true`.
+
+### What the flow does
+
+`POST /auth/forgot-password` always answers the same, whether or not the
+address exists — otherwise it becomes the enumeration oracle that `/auth/login`
+is carefully not. Tokens are single-use, expire in 30 minutes, are stored only
+as hashes, and requesting a new link invalidates the previous one. Completing a
+reset revokes every existing session. An address that signs in with Google gets
+an email saying so instead of a link that leads nowhere.
+
+With no `EMAIL_PROVIDER` set, reset links are written to the server log rather
+than sent — convenient in development, and refused outright in production.
+
+---
+
 ## Operational notes
 
 - **Rate limits** default to 8 login attempts per IP+email per 15 minutes and 5

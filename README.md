@@ -84,7 +84,7 @@ every crash. These survive restarts and are prunable.
 
 Verified end to end, not just unit-tested:
 
-- **36 tests passing** — 19 server tests (`node:test`) plus **17 browser
+- **48 tests passing** — 31 server tests (`node:test`) plus **17 browser
   assertions** run against the live API from a *different origin*
   (`localhost:5180` → `localhost:4000`), which is the only way to prove CORS,
   cross-origin cookies, and silent refresh actually work.
@@ -175,6 +175,8 @@ const top = await pk.getLeaderboard({ limit: 10 });
 | `POST /auth/register` | — | Create an account |
 | `POST /auth/login` | — | Sign in |
 | `POST /auth/google` | — | Sign in with a Google ID token |
+| `POST /auth/forgot-password` | — | Email a reset link |
+| `POST /auth/reset-password` | — | Set a new password from a link |
 | `POST /auth/refresh` | cookie | New access token (rotates refresh) |
 | `POST /auth/logout` | cookie | Revoke this session |
 | `POST /auth/logout-everywhere` | bearer | Revoke all sessions |
@@ -187,8 +189,8 @@ const top = await pk.getLeaderboard({ limit: 10 });
 
 ## Trade-offs & future work
 
-- **No email verification or password reset yet.** Both need an email provider;
-  the token plumbing is the easy half. This is the next thing I'd add.
+- **No email verification yet.** Password reset is in (see the API table); the
+  same plumbing makes verification a small addition.
 - **Scores are client-reported.** Fine among friends, trivially cheatable by a
   determined player. Server-authoritative scoring would mean replaying game
   logic on the server — a much larger design.
