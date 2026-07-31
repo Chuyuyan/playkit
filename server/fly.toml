@@ -1,0 +1,39 @@
+# fly.toml app configuration file for playkit
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'server-rosy-glade-538'
+primary_region = 'yyz'
+
+[build]
+
+[env]
+  # The server defaults to 127.0.0.1, which is unreachable from fly-proxy —
+  # inside a container it has to listen on all interfaces.
+  HOST = '0.0.0.0'
+  PORT = '3000'
+  NODE_ENV = 'production'
+  # Must sit on the mounted volume below, or every deploy starts with an empty
+  # database and all accounts are gone.
+  DATABASE_PATH = '/data/playkit.db'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+# The SQLite file lives here. A volume is pinned to one machine, so the app is
+# deliberately kept at a single machine (`fly scale count 1`) — two machines
+# would mean two divergent databases.
+[[mounts]]
+  source = 'playkit_data'
+  destination = '/data'
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1

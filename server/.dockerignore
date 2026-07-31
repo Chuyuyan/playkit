@@ -1,0 +1,14 @@
+/.git
+/node_modules
+.dockerignore
+.env
+.env.*
+Dockerfile
+fly.toml
+
+# Not needed at runtime
+/test
+/data
+*.db
+*.db-wal
+*.db-shm
