@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <style>
+    .bg    { fill: #0d1117; }
+    .card  { fill: #161b22; stroke: #30363d; stroke-width: 1.5; rx: 10; }
+    .accent{ fill: #1f2a37; stroke: #388bfd; stroke-width: 1.5; rx: 10; }
+    .store { fill: #17212b; stroke: #3fb950; stroke-width: 1.5; rx: 10; }
+    .t     { fill: #e6edf3; font-size: 14px; font-weight: 600; }
+    .s     { fill: #8b949e; font-size: 11.5px; }
+    .lbl   { fill: #6e7681; font-size: 10.5px; letter-spacing: 0.08em; }
+    .line  { stroke: #484f58; stroke-width: 1.4; fill: none; }
+    .flow  { stroke: #388bfd; stroke-width: 1.6; fill: none; }
+    .ftxt  { fill: #58a6ff; font-size: 10.5px; }
+    .gtxt  { fill: #3fb950; font-size: 10.5px; }
+  </style>
+  <rect class="bg" x="0" y="0" width="900" height="560"/>
+
+  <text class="lbl" x="40" y="38">THREE STATIC GAMES · THREE DIFFERENT ORIGINS</text>
+
+  <!-- Games -->
+  <rect class="card" x="40" y="52" width="240" height="72"/>
+  <text class="t" x="56" y="80">Investment Time Machine</text>
+  <text class="s" x="56" y="100">investment-time-machine.fly.dev</text>
+  <text class="s" x="56" y="115">React · save slices + DQ leaderboard</text>
+
+  <rect class="card" x="300" y="52" width="240" height="72"/>
+  <text class="t" x="316" y="80">Dance Trainer</text>
+  <text class="s" x="316" y="100">dance-trainer.fly.dev</text>
+  <text class="s" x="316" y="115">React · practice history, no board</text>
+
+  <rect class="card" x="560" y="52" width="300" height="72"/>
+  <text class="t" x="576" y="80">Pose Runner</text>
+  <text class="s" x="576" y="100">chuyuyan.github.io/webcam-pose-runner</text>
+  <text class="s" x="576" y="115">Vanilla JS · best score + distance board</text>
+
+  <!-- SDK -->
+  <rect class="accent" x="240" y="168" width="420" height="66"/>
+  <text class="t" x="262" y="194">playkit SDK</text>
+  <text class="s" x="262" y="213">Dependency-free, ~8 kB. Access token in memory only;</text>
+  <text class="s" x="262" y="227">silent refresh, optimistic-concurrency saves, Google button.</text>
+
+  <path class="line" d="M160 124 L160 148 Q160 168 200 168 L240 190"/>
+  <path class="line" d="M420 124 L420 168"/>
+  <path class="line" d="M710 124 L710 148 Q710 168 670 168 L660 190"/>
+
+  <!-- Network boundary -->
+  <line class="line" x1="40" y1="268" x2="860" y2="268" stroke-dasharray="5 5"/>
+  <text class="lbl" x="40" y="262">BROWSER</text>
+  <text class="lbl" x="40" y="286">NETWORK · CORS ALLOWLIST · SameSite=None COOKIES</text>
+
+  <path class="flow" d="M400 234 L400 318"/>
+  <text class="ftxt" x="412" y="252">Bearer access token (15 min)</text>
+  <text class="ftxt" x="412" y="306">httpOnly refresh cookie (30 d, rotated)</text>
+
+  <!-- Server -->
+  <rect class="accent" x="180" y="318" width="540" height="150"/>
+  <text class="t" x="202" y="344">playkit server · playkit.fly.dev</text>
+  <text class="s" x="202" y="362">Fastify on Node, TypeScript stripped natively — no build step</text>
+
+  <rect class="card" x="202" y="378" width="150" height="70"/>
+  <text class="t" x="216" y="401" font-size="12.5">Auth</text>
+  <text class="s" x="216" y="419" font-size="10.5">scrypt · JWT (jose)</text>
+  <text class="s" x="216" y="433" font-size="10.5">Google ID token via JWKS</text>
+
+  <rect class="card" x="368" y="378" width="150" height="70"/>
+  <text class="t" x="382" y="401" font-size="12.5">Saves</text>
+  <text class="s" x="382" y="419" font-size="10.5">Per-game blobs, versioned</text>
+  <text class="s" x="382" y="433" font-size="10.5">409 on a stale write</text>
+
+  <rect class="card" x="534" y="378" width="164" height="70"/>
+  <text class="t" x="548" y="401" font-size="12.5">Scores</text>
+  <text class="s" x="548" y="419" font-size="10.5">Leaderboards + my-rank</text>
+  <text class="s" x="548" y="433" font-size="10.5">Rate limits survive restart</text>
+
+  <!-- Storage -->
+  <rect class="store" x="180" y="496" width="250" height="44"/>
+  <text class="t" x="200" y="516" font-size="12.5">SQLite on a Fly volume</text>
+  <text class="s" x="200" y="532" font-size="10.5">node:sqlite, WAL — zero native deps</text>
+
+  <rect class="store" x="450" y="496" width="270" height="44"/>
+  <text class="t" x="470" y="516" font-size="12.5">SMTP</text>
+  <text class="s" x="470" y="532" font-size="10.5">Password reset only; tokens hashed, single-use</text>
+
+  <path class="line" d="M300 468 L300 496"/>
+  <path class="line" d="M580 468 L580 496"/>
+
+  <text class="gtxt" x="740" y="200">One account,</text>
+  <text class="gtxt" x="740" y="216">every game.</text>
+</svg>

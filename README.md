@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/Chuyuyan/playkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Chuyuyan/playkit/actions/workflows/ci.yml)
 
+<p align="center">
+  <img src="docs/architecture.svg" alt="Three games on three origins share one SDK, one Fastify server, and one SQLite volume." width="880">
+</p>
+
 One backend for a shelf of small web games: **accounts, cloud saves, and
 leaderboards**, plus a dependency-free browser SDK that any game can drop in.
 
