@@ -13,6 +13,31 @@ Built because I had several finished games that all needed the same thing — "l
 players sign in and keep their progress" — and none of them deserved their own
 backend.
 
+### It is running right now
+
+A backend has no home page, so the honest demo is the things using it. One
+account works across all three of these, on three different origins:
+
+| | |
+| --- | --- |
+| **Live API** | [playkit.fly.dev/health](https://playkit.fly.dev/health) — reports which games are registered and whether Google sign-in and password reset are configured |
+| **Investment Time Machine** | [investment-time-machine.fly.dev](https://investment-time-machine.fly.dev) — cloud save + a Decision-Quality leaderboard |
+| **Pose Runner** | [chuyuyan.github.io/webcam-pose-runner](https://chuyuyan.github.io/webcam-pose-runner/) — best score + a distance board |
+| **Dance Trainer** | [dance-trainer.fly.dev](https://dance-trainer.fly.dev) — practice history across devices |
+
+Sign in on any one of them and the other two already know who you are — the
+refresh cookie is shared, the games are not.
+
+The one page playkit serves itself is the password-reset form, hosted here
+rather than in each game because a reset link has to work no matter which game
+the player came from:
+
+<p align="center">
+  <img src="docs/reset-page.png" width="420" alt="The password reset page: a new-password field, a confirmation field, and an update button." />
+</p>
+
+<p align="center"><em>Deliberately one static document — the token is read from the URL by the page, never interpolated into the HTML. A test covers that, because <code>JSON.stringify</code> does not escape <code>&lt;/script&gt;</code>.</em></p>
+
 ---
 
 ## The problem
