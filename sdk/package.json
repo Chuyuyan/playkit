@@ -10,7 +10,8 @@
     "build": "esbuild src/index.ts --bundle --format=esm --outfile=dist/playkit.js --sourcemap",
     "build:min": "esbuild src/index.ts --bundle --format=esm --minify --outfile=dist/playkit.min.js",
     "vendor": "npm run build && node scripts/vendor.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.ts"
   },
   "devDependencies": {
     "esbuild": "^0.24.2",
